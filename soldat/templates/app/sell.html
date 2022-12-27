@@ -1,0 +1,58 @@
+{% extends "app/base.html" %}
+{% block title %} Sell item {% endblock title%}
+{% block content %}
+    
+<h1>Add new product</h1>
+{{error}}
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-row">
+        <div class="col-md-10 offset-md-1">
+            <div class="form-group">
+                <label class="small mb-1">Product name</label>
+                {{ productform.name }}
+            </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-10 offset-md-1">
+            <div class="form-group">
+              <label class="small mb-1">Product price</label>
+              {{ productform.price }}
+            </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-10 offset-md-1">
+            <div class="form-group">
+              <label class="small mb-1">Quantity:</label>
+              {{ productform.quantity }}
+            </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-10 offset-md-1">
+            <div class="form-group">
+                <!-- Add a Remember me functionality -->
+                <label> Product photo</label>
+                {{ productform.photo }}
+            </div>
+        </div>
+    <div class="form-row">
+        <div class="col-md-10 offset-md-1">
+            <div class="form-group">
+                <!-- Add a Remember me functionality -->
+                <label> Product description</label>
+                {{ productform.description }}
+            </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-10 offset-md-1">
+            <div class="form-group mt-0 mb-1">
+              <button name="product-button" class="col-md-12 btn btn-dark" id="prod-btn">Add product</button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock content %}

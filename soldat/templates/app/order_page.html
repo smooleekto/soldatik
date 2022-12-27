@@ -1,0 +1,60 @@
+{% extends "app/base.html" %}
+{% block title %}Checkout{% endblock title %}
+{% block content %}
+<h1>TEST</h1>
+<h1>Your order</h1>
+<table class="cart">
+  <thead>
+    <tr>
+      <th>Image</th>
+      <th>Product</th>
+      <th>Amount</th>
+      <th>Price</th>
+      <th>Total</th>
+      <th>Delete</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in cart %}
+      {% with product=item.product %}
+        <tr>
+          <td>
+            <a href="{{ product.get_absolute_url }}">
+              <img src="{{MEDIA_URL}}{{product.photo}}" width="200" height="200">
+            </a>
+          </td>
+          <td>{{ product.name }}</td>
+          
+          <td>
+            {{ item.quantity }}
+          </td>
+          <td class="num">${{ item.price }}</td>
+          <td class="num">${{ item.total_price }}</td>
+        </tr>
+      {% endwith %}
+    {% endfor %}
+    <tr class="total">
+      <td>Total</td>
+      <td colspan="4"></td>
+      <td class="num">${{ cart.get_total_price }}</td>
+    </tr>
+  </tbody>
+</table>
+<div class="form-content">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="small mb-1">First name:</label>
+                {{ orderform.customer_first_name }}
+            <label class="small mb-1">Last name:</label>
+                {{ orderform.customer_last_name }}
+        </div>
+        <div class="form-group">
+            <label class="small mb-1">Phone:</label>
+                {{ orderform.customer_phone }}
+            <label class="small mb-1">Post office:</label>
+                {{ orderform.post_office }}
+        </div>
+        <button type="submit" class="btn btn-dark">Confirm the purchase</button>
+    </form>
+{% endblock content %}

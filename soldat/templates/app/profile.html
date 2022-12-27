@@ -1,0 +1,134 @@
+{% extends "app/base.html" %}
+{% block title %}Profile Page{% endblock title %}
+{% block content %}
+    <div class="row my-3 p-3">
+        <img class="rounded-circle account-img" src="{{ user.profile.avatar.url }} " style="cursor: pointer;"/>
+    </div>
+    {% if user_form.errors %}
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            <div id="form_errors">
+                {% for key, value in user_form.errors.items %}
+                    <strong>{{ value }}</strong>
+                {% endfor %}
+            </div>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    {% endif %}
+    <div class="form-content">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label class="small mb-1">Username:</label>
+                            {{ user_form.username }}
+                        <label class="small mb-1">Email:</label>
+                            {{ user_form.email }}
+                    </div>
+                    <div class="form-group">
+                        <a href="{% url 'password_change' %}">Change Password</a>
+                        <hr>
+                        <label class="small mb-1">Change Avatar:</label>
+                        {{ profile_form.avatar }}
+                    </div>
+                    <label class="small mb-1">Bio:</label> {{ profile_form.bio }}
+                </div>
+            </div>
+            <br><br>
+            <button type="submit" class="btn btn-dark btn-lg">Save Changes</button>
+            <button type="reset" class="btn btn-dark btn-lg">Reset</button>
+        </form>
+    </div>
+    {%if user.groups.first == user_group.last%}
+        <h1>Your products</h1>
+            {% for el in products%}
+                {% if el.vendor_id_id == user.id %}
+                    <div class="product-label">
+                        <img src="{{MEDIA_URL}}{{el.photo}}" alt="" width="100" height="100">
+                        {{el.name}}
+                        {{el.price}}
+                        <a href="{% url 'app-delete' el.product_id %}" class="btn btn-outline-danger">Delete</a>
+                    </div>
+            {% endif %}
+            {% endfor %} 
+            <hr>
+    {% endif %}
+        <h1>Bids</h1>
+        {% for el in bids %}
+            {% if el.vendor_id_id == user.id and el.status == 'Waiting'%}
+            
+            <div class="product-label">
+                <p>{{el.customer_name}} wants to buy {{el.quantity}} items of product «{{el.product_name}}» for {{el.new_price}}$ each</p>
+                <a href="{% url 'app-accept_offer' el.product_bid_id %}" class="btn btn-dark">Accept</a>
+                <a href="{% url 'app-decline_offer' el.product_bid_id %}" class="btn btn-outline-danger">Decline</a>
+            </div>
+            {% endif %}
+            {% if el.customer_id_id == user.id and el.status == 'Declined'%}
+            <div class="product-label" style="display:flex">
+                <p>Vendor {{el.vendor_name}} has declined your offer for product «{{el.product_name}}»   </p>
+                <a href="{% url 'app-delete_offer' el.product_bid_id %}" style="margin-left: 10px">&#10008;</a>
+            </div>
+            {% endif %}
+            {% if el.customer_id_id == user.id and el.status == 'Accepted'%}
+            <div class="product-label">
+                <p>Vendor {{el.vendor_name}} has accepted your offer for product «{{el.product_name}}»</p>
+                <a href="{% url 'app-order_bid' el.product_bid_id %}" class='btn btn-dark'">To cart</a>
+            </div>
+            {% endif %}
+        {% endfor %}
+    <h1>Orders</h1>
+    {%for el in orders%}
+        {%if el.customer_id_id == user.id%}
+        <div class="product-label">
+            <p>Order №{{el.order_id}}</p>
+            <p>Vendor {{el.vendor_name}}</p>
+            <p>Customer: {{el.customer_first_name}} {{el.customer_last_name}}</p>
+            <p>Phone: {{el.customer_phone}}</p>
+            <p>Post office: {{el.post_office}}</p>
+            <p>Status: {{el.status}}</p>
+            {%for item in productsorders%}
+                {%if item.order_id_id == el.order_id%}
+                <div class="product-label">
+                    <p><img src="{{MEDIA_URL}}{{item.photo}}" width="100" height="100" alt=""> | {{item.name}} | Amount: {{item.quantity}} | Total price: ${{item.price}}</p>
+                {%endif%}
+            {%endfor%}
+            {% for pr in totals %}
+                {%if pr.0 == el.order_id%}
+                   <p>Order price: ${{pr.1}}</p>
+                {%endif%}
+            {% endfor %}
+                </div>
+        </div>
+        <hr>
+        {%endif%}
+        {%if el.vendor_id_id == user.id%}
+        <div class="product-label">
+            <p>Order №{{el.order_id}}</p>
+            <p>Customer {{el.customer_name}}</p>
+            <p>First name: {{el.customer_first_name}}</p> 
+            <p>Last name: {{el.customer_last_name}}</p>
+            <p>Phone: {{el.customer_phone}}</p>
+            <p>Post office: {{el.post_office}}</p>
+            <p>Status: {{el.status}}</p>
+            {%for item in productsorders%}
+                {%if item.order_id_id == el.order_id%}
+                <div class="product-label">
+                    <p><img src="{{MEDIA_URL}}{{item.photo}}" width="100" height="100" alt=""> | {{item.name}} | Amount: {{item.quantity}} | Total price: ${{item.price}}</p>
+                {%endif%}
+            {%endfor%}
+            {% for pr in totals %}
+                {%if pr.0 == el.order_id%}
+                   <p>Order price: ${{pr.1}}</p>
+                {%endif%}
+            {% endfor %}
+                </div>
+        </div>
+        {%if el.status == 'Waiting for sending'%}
+            <a href="{% url 'app-order_status' el.order_id %}" class="btn btn-dark">I've send the order</a>
+        {%endif%}
+        <hr>
+        {%endif%}
+    {%endfor%}
+{% endblock content %}

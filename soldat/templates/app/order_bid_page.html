@@ -1,0 +1,52 @@
+{% extends "app/base.html" %}
+{% block title %}Checkout{% endblock title %}
+{% block content %}
+<h1>TEST</h1>
+<h1>Your order</h1>
+<table class="cart">
+  <thead>
+    <tr>
+      <th>Image</th>
+      <th>Product</th>
+      <th>Amount</th>
+      <th>Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <td>
+        <img src="{{MEDIA_URL}}{{bid.product_id.photo}}" width="200" height="200">
+        </td>
+        <td>{{ bid.product_name }}</td>
+        
+        <td>
+        {{ bid.quantity }}
+        </td>
+        <td class="num">${{ bid.new_price }}</td>
+    </tr>
+    
+    <tr class="total">
+      <td>Total</td>
+      <td colspan="4"></td>
+      <td class="num">${{total}}</td>
+    </tr>
+  </tbody>
+</table>
+<div class="form-content">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="small mb-1">First name:</label>
+                {{ orderform.customer_first_name }}
+            <label class="small mb-1">Last name:</label>
+                {{ orderform.customer_last_name }}
+        </div>
+        <div class="form-group">
+            <label class="small mb-1">Phone:</label>
+                {{ orderform.customer_phone }}
+            <label class="small mb-1">Post office:</label>
+                {{ orderform.post_office }}
+        </div>
+        <button type="submit" class="btn btn-dark">Confirm the purchase</button>
+    </form>
+{% endblock content %}

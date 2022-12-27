@@ -1,0 +1,100 @@
+{% extends 'app/base.html' %}
+{% block title %}SPOT || {{product.name}}{% endblock title %}
+
+{% block content %}
+<img src="{{MEDIA_URL}}{{product.photo}}" alt="{{product.name}} photo" width="500" height="500">
+<h1>{{product.name}}</h1>
+{% for el in users %}   
+    {% if el.id == product.vendor_id_id %}
+        <h3>Vendor: {{el.username}}</h3>
+    {% endif %}
+{%endfor%}
+<div>{{product.price}}$
+    {% if user.is_authenticated and user.id != product.vendor_id_id %}
+        <div class="form-content">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="col-md-10 offset-md-1">
+                        <div class="form-group">
+                          <label class="small mb-1">Your price:</label>
+                          {{ bid_form.new_price }}
+                        </div>
+                    </div>
+                </div>
+                    <div class="form-row">
+                        <div class="col-md-4 offset-md-1">
+                            <div class="form-group">
+                              <label class="small mb-1">Quantity:</label>
+                              {{ bid_form.quantity }}
+                            </div>
+                            <button type="submit" class="btn btn-dark" name="btn-offer">Offer Price</button>
+                        </div>
+                    </div>
+            </form>
+        </div>
+    {% endif %}
+</div>
+<div>In stock: {{product.quantity}}</div>
+<div>{{product.description}}</div>
+<h1>Comments</h1>
+{% if comment_count == 0 %}
+    <h3>No comments yet</h3>
+{% else %}
+    <div class="comments">
+        {% for el in comments %}
+            {% if el.product_id_id == details_id %}
+                <div class="comment__container">
+                    {% for item in users%}
+                        {% if el.customer_id_id == item.id %}
+                        <img class="rounded-circle account-img" src="{{item.profile.avatar.url}} " width="30" height="30"/>   {{item.username}}
+                        {% endif %}
+                    {% endfor %}
+                    {{el.mark}}
+                    {{el.comment}}
+                    {% if el.customer_id_id == user.id%}
+                        <a href="{% url 'app-delete_comment' el.comment_id %}" class="btn btn-outline-danger">Delete</a>
+                    {%endif%}
+                </div>
+                {% for item in replies %}
+                    {% if item.comment_id_id == el.comment_id%}
+                        <div class="comment__container">
+                        {% for q in users%}
+                            {% if item.user_id == q.id %}
+                                <img class="rounded-circle account-img" src="{{q.profile.avatar.url}} " width="30" height="30"/>   {{item.username}}
+                            {% endif %}
+                        {% endfor %}
+                        {{item.comment}}
+                        {% if item.user_id == user.id%}
+                            <a href="" class="btn btn-outline-danger">Delete</a>
+                        {%endif%} 
+                    {%endif%}
+                {% endfor %}        
+                <div class="form-reply" >
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                        {{reply_form.comment}}
+                                </div>
+                        <button type="submit" class="btn btn-dark btn-lg" name="btn-reply">Reply</button>
+                    </form>
+                </div>                
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}
+<div class="form-content">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="col-md-5">
+                <div class="form-group">
+                        {{comment_form}}
+                </div>
+        <button type="submit" class="btn btn-dark btn-lg" name="btn-comment">Post</button>
+    </form>
+</div>
+
+{% endblock %}

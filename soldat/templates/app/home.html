@@ -1,0 +1,35 @@
+{% extends "app/base.html" %}
+{% block title %} Home Page {% endblock title%}
+{% block content %}
+    <div class="card_deck">
+        {% for el in products %}
+        <div class="card" style="width: 300px;">
+            <!-- Изображение -->
+            <img src="{{MEDIA_URL}}{{el.photo}}" alt="img" width="100" height="100" style="margin: 0 auto;">
+            <!-- Текстовый контент -->
+            <div class="card-body">
+                <a href="{% url 'app-productdetails' el.product_id %}">{{el.name}}</a><h4>{{el.price}}$</h4>
+                <p>Vendor:
+                    <img class="rounded-circle account-img" src="{{el.vendor_id.profile.avatar.url}} " width="30" height="30"/> {{el.vendor_id}}</p>
+                <p>{% if el.quantity > 0 %}
+                    In stock: {{el.quantity}}
+                {%else%}
+                OUT OF STOCK
+                {%endif%}</p>
+                <p class="card-text">{{el.description}}</p>
+            </div>
+            <!-- Текстовый контент -->
+            {% if el.quantity > 0 %}
+            <div class="card-body">
+                <form action="{% url 'cart:cart_add' el.product_id%}" method="post">
+                    {% csrf_token %}
+                    {{product_form}}
+                    <input type="submit" value="To cart">
+                </form>
+            </div>
+            {% endif%}
+        </div><!-- Конец карточки -->
+        {%endfor%}
+    </div>
+
+{% endblock content %}
