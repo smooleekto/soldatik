@@ -6,7 +6,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.views import View
 from django.views.generic import DeleteView
 from django.contrib.auth.decorators import login_required
-from .forms import RegisterForm, RepliesForm, LoginForm, UpdateUserForm, UpdateProfileForm, AddProduct, CommentForm, BidForm, OrderForm
+from .forms import UpdateProductForm, RegisterForm, RepliesForm, LoginForm, UpdateUserForm, UpdateProfileForm, AddProduct, CommentForm, BidForm, OrderForm
 from .models import Products, Profile, Comments, Replies, ProductsBid, Orders, ProductsOrders
 from django.contrib.auth.models import Group
 from django.contrib.auth import authenticate
@@ -21,7 +21,8 @@ def home(request):
     user_group = Group.objects.all()
     users = Profile.objects.all()
     product_form = CartAddProductForm
-    return render(request, 'app/home.html', {   'products':products, 'user_group':user_group, 'product_form': product_form, 'users':users})
+    cart = Cart(request)
+    return render(request, 'app/home.html', {'cart':cart,   'products':products, 'user_group':user_group, 'product_form': product_form, 'users':users})
 
 
 
@@ -105,7 +106,7 @@ class ChangePasswordView(SuccessMessageMixin, PasswordChangeView):
 @login_required
 def profile(request):
     bids = ProductsBid.objects.all()
-    
+    prupdateform = UpdateProductForm()
     users = User.objects.all()
     orders = Orders.objects.all()
     productsorders = ProductsOrders.objects.all()
@@ -140,7 +141,8 @@ def profile(request):
     'user_group': user_group,
     'orders': orders,
     'productsorders': productsorders,
-    'totals': totals,})
+    'totals': totals,
+    'prupdateform':prupdateform})
 
 
 
@@ -154,6 +156,9 @@ def productsadd(request):
             to_db.name = productform.cleaned_data['name']
             to_db.photo = productform.cleaned_data['photo']
             to_db.quantity = productform.cleaned_data['quantity']
+            if to_db.quantity or to_db.price < 0 :
+                messages.error(request, f'Amount must be positive')
+                return redirect(to='/sell')
             to_db.description = productform.cleaned_data['description']
             user_id = request.user.id
             user = User.objects.get(id=user_id)
@@ -175,14 +180,19 @@ def productsadd(request):
 
 def productupdate(request, product_id):
     product = Products.objects.get(pk=product_id)
-    prupdateform = AddProduct(request.POST or None, instance=product)
-    if prupdateform.is_valid():
-        prupdateform.save()
-        return redirect('app-profile')
-    
-    return render(request, 'profile/update_products',
-    {'product': product,
-    'prupdateform': prupdateform,})
+    productform = UpdateProductForm(request.POST)
+    if request.method == 'POST' and 'btn-prupd' in request.POST:
+        productform = UpdateProductForm(request.POST)
+        if productform.is_valid():
+            updname = productform.cleaned_data['name']
+            updquantity = productform.cleaned_data['quantity']
+            updprice = productform.cleaned_data['price']
+
+            Products.objects.filter(product_bid_id=product_id).update(name=updname)
+            Products.objects.filter(product_bid_id=product_id).update(quantity=updquantity)
+            Products.objects.filter(product_bid_id=product_id).update(price=updprice)
+            return redirect('app-profile')
+    return render(request, 'app/profile.html', {'productform':productform})
 
 
 def productdelete(request, product_id):
@@ -243,6 +253,9 @@ def product_details(request, product_id):
             to_db = ProductsBid()
             to_db.new_price = bid_form.cleaned_data['new_price']
             to_db.quantity = bid_form.cleaned_data['quantity']
+            if to_db.quantity or to_db.price < 0 :
+                messages.error(request, f'Amount must be positive')
+                return HttpResponseRedirect(request.path_info)
             to_db.product_id = Products.objects.get(product_id=details_id)
             to_db.customer_id = User.objects.get(id=request.user.id)
             to_db.vendor_id = product.vendor_id
@@ -290,6 +303,9 @@ def order_page(request):
             to_db.customer_first_name = orderform.cleaned_data['customer_first_name']
             to_db.customer_last_name = orderform.cleaned_data['customer_last_name']
             to_db.customer_phone = orderform.cleaned_data['customer_phone']
+            if to_db.customer_phone[0:4] != '+380' or len(to_db.customer_phone) !=11:
+                messages.error(request, f'Phone example: +3807771133')
+                return HttpResponseRedirect(request.path_info)
             to_db.vendor_id = User.objects.get(id=list(cart)[0].get('product').vendor_id_id)
             to_db.status = 'Waiting for sending'
             if request.user.is_anonymous == False:
@@ -316,7 +332,6 @@ def order_page(request):
     {'cart': cart,
     'orderform': orderform})
 
-
 def order_bid(request, order_bid_id):
     orderform = OrderForm(request.POST)
     bid = ProductsBid.objects.get(product_bid_id=order_bid_id)
@@ -327,6 +342,9 @@ def order_bid(request, order_bid_id):
             to_db.customer_first_name = orderform.cleaned_data['customer_first_name']
             to_db.customer_last_name = orderform.cleaned_data['customer_last_name']
             to_db.customer_phone = orderform.cleaned_data['customer_phone']
+            if to_db.customer_phone[0:4] != '+380' or len(to_db.customer_phone) !=11 :
+                messages.error(request, f'Phone example: +3807771133')
+                return redirect(to='/sell')
             to_db.vendor_id = User.objects.get(id=bid.vendor_id_id)
             to_db.status = 'Waiting for sending'
             user_id = request.user.id

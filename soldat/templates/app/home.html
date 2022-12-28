@@ -19,7 +19,7 @@
                 <p class="card-text">{{el.description}}</p>
             </div>
             <!-- Текстовый контент -->
-            {% if el.quantity > 0 %}
+            {% if el.quantity > 0 %}            
             <div class="card-body">
                 <form action="{% url 'cart:cart_add' el.product_id%}" method="post">
                     {% csrf_token %}

@@ -48,7 +48,15 @@
                     <div class="product-label">
                         <img src="{{MEDIA_URL}}{{el.photo}}" alt="" width="100" height="100">
                         {{el.name}}
+                        {{el.quantity}}
                         {{el.price}}
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{prupdateform.name}}
+                            {{prupdateform.quantity}}
+                            {{prupdateform.price}}
+                            <a href="{% url 'app-productupdate' el.product_id %}" name="btn-prupd" class="btn btn-dark">Update</a>
+                        </form>
                         <a href="{% url 'app-delete' el.product_id %}" class="btn btn-outline-danger">Delete</a>
                     </div>
             {% endif %}

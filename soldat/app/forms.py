@@ -92,6 +92,18 @@ class UpdateProfileForm(forms.ModelForm):
         model = Profile
         fields = ['avatar', 'bio']
 
+
+class UpdateProductForm(forms.ModelForm):
+    name = forms.CharField(max_length=40,
+                               required=True,)
+    quantity = forms.IntegerField(required=True)
+    price = forms.FloatField(required=True)
+
+    class Meta:
+        model = Products
+        fields = ['name', 'quantity', 'price']
+
+
 class AddProduct(forms.ModelForm):
     price = forms.FloatField()
     name = forms.CharField(max_length=20)
